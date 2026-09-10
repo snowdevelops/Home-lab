@@ -1,0 +1,7 @@
+[Unit]
+Description=Homelab restic backup
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/srv/docker/scripts/backup.sh
