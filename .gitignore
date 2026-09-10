@@ -1,0 +1,15 @@
+# Secrets
+.env
+*.env
+!.env.example
+
+# Runtime Data
+data/
+*/data
+config/
+*/config/
+
+# Logs and datasets
+*.log
+*.db
+*.sqlite3
