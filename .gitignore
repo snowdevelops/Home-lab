@@ -13,3 +13,5 @@ config/
 *.log
 *.db
 *.sqlite3
+cache/
+*/cache/
