@@ -15,6 +15,7 @@ Self-hosted services running on an old desktop.
 | Service | Port | Purpose |
 |---|---|---|
 | AdGuard Home | 8080 | Network-wide DNS ad blocking |
+| Jellyfin | 8096 | Media Server |
 
 ## Notes
 - Docker installed from Docker's official repo, not Debian's

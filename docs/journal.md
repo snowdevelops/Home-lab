@@ -33,6 +33,26 @@ picked up the mapping. `down` then `up -d` recreated it properly.
 Rule: edit the compose file, use `up -d`. Edit a config file the app
 reads at runtime, `restart` is enough.
 
+## 2026-09-12 â€” Jellyfin
+
+Installed Jellyfin twice by accident. Read the docs, installed the apt
+package without registering that I'd done it, then later tried the Docker
+version and hit "address already in use" on 8096. `ss -tulnp` showed a
+native `jellyfin` process holding the port â- that was the earlier install
+running as a systemd service. Purged it and went with Docker for
+consistency with everything else.
+
+Second failure: config and cache directories were root-owned because
+Docker creates missing bind-mount dirs as root. Jellyfin runs as 1000:1000
+and couldn't write its logs, so it crash-looped with exit 139. chown fixed
+it â- but `up -d` reused the broken container, so it kept restarting until
+I ran `down` first. Second time today that `restart`/`up -d` on an existing
+container didn't do what I expected.
+
+Also: `-- Media:` instead of `- Media:` in services.yaml. Two hyphens is
+not a list item. `python3 -c "import yaml; yaml.safe_load(open(...))"`
+catches this in a second.
+
 ### Notes
 - AdGuard admin moved off port 80 to leave it free for a reverse proxy
 - Removed AdGuard's 3000 mapping once setup was done; it was blocking Homepage
