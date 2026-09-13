@@ -4,7 +4,7 @@ set -euo pipefail
 export RESTIC_REPOSITORY="/mnt/storage/backups/restic"
 export RESTIC_PASSWORD_FILE="/root/.restic-password"
 
-SERVICES=(adguard homepage jellyfin)
+SERVICES=(adguard homepage jellyfin vaultwarden)
 
 echo "=== Backup started $(date) ==="
 
@@ -13,7 +13,7 @@ for svc in "${SERVICES[@]}"; do
   docker compose -f "/srv/docker/$svc/compose.yaml" stop
 done
 
-restic backup /srv/docker --tag auto
+restic backup /srv/docker /mnt/storage/vaultwarden --tag auto
 
 for svc in "${SERVICES[@]}"; do
   echo "Starting $svc"

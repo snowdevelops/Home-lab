@@ -1,0 +1,12 @@
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+    container_name: vaultwarden
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    volumes:
+      - /mnt/storage/vaultwarden:/data
+    environment:
+      SIGNUPS_ALLOWED: "false"
+      DOMAIN: "https://homelab.tail89496e.ts.net/"
