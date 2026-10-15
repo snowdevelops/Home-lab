@@ -1,0 +1,7 @@
+[Unit]
+Description=Check Vaultwarden via Tailscale and report to Uptime Kuma
+
+[Service]
+Type=oneshot
+User=snow
+ExecStart=/srv/docker/scripts/tailscale-check.sh

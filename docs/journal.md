@@ -53,6 +53,25 @@ Also: `-- Media:` instead of `- Media:` in services.yaml. Two hyphens is
 not a list item. `python3 -c "import yaml; yaml.safe_load(open(...))"`
 catches this in a second.
 
+## 2026-10-15 — Vaultwarden monitor false alarms
+
+- Uptime Kuma showed Vaultwarden down repeatedly (EAI_AGAIN, ENOTFOUND, ECONNREFUSED).
+- Root cause of the long outage: the Oct 12 `apt upgrade` (Tailscale 1.102.5 → 1.104.1,
+  Docker 29.8 → 29.9) changed behavior so containers can no longer connect to the host's
+  tailnet IP on 443. The `tailscale serve` listener is bound to tailscale0
+  (`100.65.193.116%tailscale0:443`), and container traffic arrives on the Docker bridge instead.
+- Vaultwarden itself was never down: `curl` from the host returned 200.
+- Fix: split monitoring.
+  - "Vaultwarden" → HTTP check of `http://192.168.1.6:8081/alive` (service only)
+  - "Vaultwarden via Tailscale" → Push monitor fed by `scripts/tailscale-check.sh`,
+    run every minute by `tailscale-check.timer` as user snow
+- Lesson: one monitor checking the whole chain can't tell you which layer broke.
+  Read error codes as steps: DNS (EAI_AGAIN/ENOTFOUND) → TCP (ECONNREFUSED) → HTTP.
+
+- Follow-up: the Push monitor showed "pending" because systemd timers have up to 1 min
+  of default slack (runs came every ~70s against a 60s heartbeat). Fixed with
+  `AccuracySec=1s` in the timer and a 90s heartbeat interval in Kuma.
+
 ### Notes
 - AdGuard admin moved off port 80 to leave it free for a reverse proxy
 - Removed AdGuard's 3000 mapping once setup was done; it was blocking Homepage
