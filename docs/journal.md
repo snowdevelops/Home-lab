@@ -129,3 +129,18 @@ catches this in a second.
 - Verified both ways: a start without the listener went `unhealthy`; a good start `healthy`.
 - Docker only marks the container unhealthy, it does not restart it. Next: have Uptime
   Kuma watch the Docker health status or the join URL.
+
+### 2026-10-17 — RakNet is not viable on BDS 1.26.52.3 (correction)
+- Tried `TRANSPORT=raknet` because playit's free Bedrock tunnel is UDP-only. Server wrote
+  "TRANSPORT TYPE ERROR ... NetherNet is the only supported transport type. Players will
+  not be able to connect", and UDP 7551 LAN discovery disappeared. Reverted.
+- Deleting the TRANSPORT env var did NOT revert it: the itzg image only rewrites
+  server.properties keys that have an env var, so `transport=raknet` stayed in ./data and
+  every restart lacked the TCP listener. Fix: set `TRANSPORT: "nethernet"` explicitly.
+  Lesson: removing an env var does not undo its effect on persisted config.
+- Verified after revert: server.properties transport=nethernet, TCP 19132 + UDP 7551
+  listening (`ss -tulnp`), "Accepting clients on [::]:19132", /v1/join OK, healthy.
+- Stage 2: playit agent added to compose (secret in gitignored minecraft/playit/playit.env,
+  mode 600). Agent connects; account_status=email_not_verified, tunnel_count=0.
+  The official image has no claim-link flow: it needs SECRET_KEY from playit's Docker
+  setup wizard. Remaining: verify email, create TCP tunnel (1 port) -> 127.0.0.1:19132.

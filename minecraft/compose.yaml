@@ -21,6 +21,10 @@ services:
       ALLOW_LIST: "true"
       # Operators by XUID (DaSnowV5); gamertags would need a mcprofile.io lookup at every start.
       OPS: "2535406535789621"
+      # Set explicitly: the image only rewrites server.properties keys it has an env var
+      # for, so merely deleting TRANSPORT leaves a previous "raknet" stuck in ./data.
+      # RakNet is not viable on BDS 1.26.52.3 (NetherNet is the only transport).
+      TRANSPORT: "nethernet"
       # NetherNet: TCP 19132 signaling + one UDP port per player.
       # Range must hold at least max-players (default 10) ports.
       # Plain range only. The ip:ext:int form made BDS 1.26.52.3 skip the TCP
@@ -37,3 +41,13 @@ services:
       start_period: 60s
     volumes:
       - ./data:/data
+
+  playit:
+    image: ghcr.io/playit-cloud/playit-agent:latest
+    container_name: minecraft-playit
+    restart: unless-stopped
+    # Host networking (as in playit's docs) so the tunnel can reach 127.0.0.1:19132.
+    network_mode: host
+    # SECRET_KEY lives in ./playit/playit.env (gitignored, mode 600), never in this file.
+    env_file:
+      - ./playit/playit.env
