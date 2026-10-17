@@ -1,0 +1,28 @@
+services:
+  bedrock:
+    image: itzg/minecraft-bedrock-server:latest
+    container_name: minecraft-bedrock
+    restart: unless-stopped
+    # Host networking: LAN discovery (UDP 7551) is broadcast and doesn't cross
+    # Docker's bridge. BDS advertises the host's addresses; no port mappings.
+    network_mode: host
+    stdin_open: true
+    tty: true
+    environment:
+      EULA: "TRUE"
+      VERSION: "LATEST"
+      TZ: "America/Sao_Paulo"
+      UID: "1000"
+      GID: "1000"
+      SERVER_NAME: "Snow Homelab"
+      GAMEMODE: "survival"
+      DIFFICULTY: "normal"
+      ONLINE_MODE: "true"
+      ALLOW_LIST: "true"
+      # NetherNet: TCP 19132 signaling + one UDP port per player.
+      # Range must hold at least max-players (default 10) ports.
+      # Plain range only. The ip:ext:int form made BDS 1.26.52.3 skip the TCP
+      # 19132 listener (no "Accepting clients" line), so don't use it here.
+      SERVER_UDP_PORTS: "19140-19155"
+    volumes:
+      - ./data:/data

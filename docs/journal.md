@@ -75,3 +75,36 @@ catches this in a second.
 ### Notes
 - AdGuard admin moved off port 80 to leave it free for a reverse proxy
 - Removed AdGuard's 3000 mapping once setup was done; it was blocking Homepage
+
+## 2026-10-17 — Minecraft Bedrock, stage 1 (server only)
+
+- Plan was BDS + playit (UDP 19132) + MCXboxBroadcast. Upstream docs showed it
+  would not work as written: BDS 1.26.50+ defaults to NetherNet (WebRTC). TCP 19132
+  signaling, then one UDP port per player from `server-udp-ports`. Nothing listens
+  on UDP 19132. RakNet (`transport=raknet`) is being removed.
+- playit's combined TCP+UDP tunnel needs Premium; one forum report says a single
+  TCP tunnel to 19132 is enough. Plan: try that free (stage 2), pay if it fails.
+  MCXboxBroadcast has NetherNet support but open issues (#402, #384) (stage 3).
+- Stage 1 built: `minecraft/compose.yaml`, bedrock only. `.gitignore` rules added
+  before anything else; `minecraft` added to `backup.sh` SERVICES.
+- `network_mode: host` because LAN discovery is a UDP 7551 broadcast and Docker's
+  bridge doesn't forward broadcasts. Pre-created `data/` as snow and set UID/GID
+  1000, so no root-owned bind mount this time.
+- python3-yaml isn't installed here; `docker compose config -q` validated instead.
+- Verified: `curl http://192.168.1.6:19132/v1/join` returns server JSON, container healthy.
+
+### 2026-10-17 — Stage 1 LAN test: result
+- First PS5 join failed ("Boat", InitialConnection-145, NetherNet:2193) with plain
+  `SERVER_UDP_PORTS=19140-19155` in host mode. Server log had no connection line at all.
+  Hypothesis was that BDS advertises every host address (docker bridges, tailscale).
+- Tried `192.168.1.6:19140-19155:19140-19155` (documented ip:ext:int form). On BDS
+  1.26.52.3 that made the TCP 19132 listener silently disappear (no "Accepting clients",
+  `ss` showed only UDP 7551) while the container still reported healthy. I had only
+  checked server.properties, not `ss`. Lesson: verify listeners with `ss -tulnp` after
+  any port change. Healthy + "Server started" proves nothing about the TCP listener.
+- Reverted to plain range, `down` + `up -d`. PS5 then joined fine (LAN Games).
+  Root cause of the first failure NOT established: same config as the failed attempt,
+  and `allowlist add DaSnowV5` was run in between. Don't assume the address theory.
+- Host firewall ruled out: ufw/nftables/firewalld inactive, no iptables/nft installed.
+- allowlist.json entries added via console have a name but no XUID; joining works anyway.
+- Next: stage 2 (playit single TCP tunnel to 127.0.0.1:19132), then stage 3 (MCXboxBroadcast).

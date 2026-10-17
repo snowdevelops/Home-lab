@@ -4,7 +4,7 @@ set -euo pipefail
 export RESTIC_REPOSITORY="/mnt/storage/backups/restic"
 export RESTIC_PASSWORD_FILE="/root/.restic-password"
 
-SERVICES=(adguard homepage jellyfin vaultwarden uptime-kuma)
+SERVICES=(adguard homepage jellyfin vaultwarden uptime-kuma minecraft)
 
 echo "=== Backup started $(date) ==="
 

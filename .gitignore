@@ -15,3 +15,8 @@ config/
 *.sqlite3
 cache/
 */cache/
+
+# Minecraft (world data, playit secret, MCXboxBroadcast auth cache)
+minecraft/data/
+minecraft/playit/
+minecraft/broadcast/
