@@ -16,13 +16,24 @@ services:
       GID: "1000"
       SERVER_NAME: "Snow Homelab"
       GAMEMODE: "survival"
-      DIFFICULTY: "normal"
+      DIFFICULTY: "hard"
       ONLINE_MODE: "true"
       ALLOW_LIST: "true"
+      # Operators by XUID (DaSnowV5); gamertags would need a mcprofile.io lookup at every start.
+      OPS: "2535406535789621"
       # NetherNet: TCP 19132 signaling + one UDP port per player.
       # Range must hold at least max-players (default 10) ports.
       # Plain range only. The ip:ext:int form made BDS 1.26.52.3 skip the TCP
       # 19132 listener (no "Accepting clients" line), so don't use it here.
       SERVER_UDP_PORTS: "19140-19155"
+    # The image's default check (mc-monitor, UDP RakNet ping) stays "healthy" even
+    # when BDS silently fails to open the NetherNet TCP 19132 listener. Test the
+    # real signaling endpoint instead. Docker only marks unhealthy; it won't restart.
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "-m", "4", "http://127.0.0.1:19132/v1/join"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
     volumes:
       - ./data:/data

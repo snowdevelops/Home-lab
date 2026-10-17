@@ -108,3 +108,24 @@ catches this in a second.
 - Host firewall ruled out: ufw/nftables/firewalld inactive, no iptables/nft installed.
 - allowlist.json entries added via console have a name but no XUID; joining works anyway.
 - Next: stage 2 (playit single TCP tunnel to 127.0.0.1:19132), then stage 3 (MCXboxBroadcast).
+
+### 2026-10-17 — Correction: TCP 19132 listener is flaky, not caused by ip:ext:int
+- Changed DIFFICULTY to hard and added OPS (DaSnowV5, by XUID so no mcprofile.io lookup
+  at startup). Both verified: log "Difficulty: 3 HARD", permissions.json has the operator.
+- After that `down`/`up -d`, TCP 19132 was missing again with the PLAIN `19140-19155`
+  range. Repeated identical recreates: sometimes "Accepting clients" appears and TCP
+  19132 listens, sometimes it silently doesn't (no error in the log, container still
+  "healthy", "Server started." still printed). So my earlier conclusion that the
+  `ip:ext:int` form removed the listener was wrong (or at least not the only cause).
+- Not found in itzg's issue tracker. Root cause unknown (BDS 1.26.52.3).
+- Workaround for now: after any recreate, check `ss -tln | grep 19132` and recreate
+  again if missing. Risk: with `restart: unless-stopped` a reboot can leave the server
+  up but unjoinable. Consider a healthcheck on TCP 19132 and/or a post-start check.
+
+### 2026-10-17 — TCP-aware healthcheck on the Bedrock container
+- The image's default healthcheck (mc-monitor, UDP RakNet ping) passed while TCP 19132 was
+  missing. Overrode it with `curl -fs http://127.0.0.1:19132/v1/join` (30s interval,
+  3 retries, 60s start period). Curl exit 7 = connection refused = listener missing.
+- Verified both ways: a start without the listener went `unhealthy`; a good start `healthy`.
+- Docker only marks the container unhealthy, it does not restart it. Next: have Uptime
+  Kuma watch the Docker health status or the join URL.
