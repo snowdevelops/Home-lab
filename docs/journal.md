@@ -144,3 +144,4 @@ catches this in a second.
   mode 600). Agent connects; account_status=email_not_verified, tunnel_count=0.
   The official image has no claim-link flow: it needs SECRET_KEY from playit's Docker
   setup wizard. Remaining: verify email, create TCP tunnel (1 port) -> 127.0.0.1:19132.
+- 2026-11-19: removed Minecraft Bedrock + playit (world deleted)
