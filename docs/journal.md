@@ -145,3 +145,4 @@ catches this in a second.
   The official image has no claim-link flow: it needs SECRET_KEY from playit's Docker
   setup wizard. Remaining: verify email, create TCP tunnel (1 port) -> 127.0.0.1:19132.
 - 2026-11-19: removed Minecraft Bedrock + playit (world deleted)
+- 2026-11-19: removed AdGuard Home (only an example.com health check used it; DNS goes through Tailscale -> Cloudflare)
